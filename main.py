@@ -2,6 +2,7 @@ import os
 import re
 import time
 import io
+
 import httpx
 import pandas as pd
 import pymysql
@@ -14,7 +15,6 @@ CLIENT_SECRET ="Hpw8Q~BR8Udgd4G1ZgyXxQYanh3ykYpJFPg2caqw"
 TENANT_ID ="e579680f-41b6-4a0a-9717-4aafe3dcfcb7"
 SITE_ID ="edpindotim.sharepoint.com,f1e7976f-0ff1-4dce-8785-7f673a850b44,640036d7-3d41-40e2-b8e6-f06b84f114aa"
 
-
 TOKEN_URL = f"https://login.microsoftonline.com/{TENANT_ID}/oauth2/v2.0/token"
 GRAPH_BASE = "https://graph.microsoft.com/v1.0"
 
@@ -24,8 +24,8 @@ DB_USERNAME='root'
 DB_DATABASE='bali_dwipa'
 DB_PASSWORD=''
 
-FOLDER_PATH = "EDP/SOURCE/CLEAN/MERCHANDISING/TFR"
-FILENAME_PATTERN = re.compile(r"STT_TFR_(\d{4})_W(\d{1,2})", re.IGNORECASE)
+FOLDER_PATH = "EDP/SOURCE/CLEAN/STT WEEK/REGION/BALI"
+FILENAME_PATTERN = re.compile(r"STT_(\d{4})_W(\d{1,2})", re.IGNORECASE)
 
 # Excel header -> DB column
 COLUMN_MAP = {
