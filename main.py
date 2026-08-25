@@ -209,17 +209,22 @@ async def sharepoint_files(folder_path: str):
     return resp.json()
 
 
+import traceback
+
 @app.get("/sharepoint/excel")
 async def sharepoint_excel(item_id: str):
-    token = await get_access_token()
-    async with httpx.AsyncClient(follow_redirects=True) as client:
-        resp = await client.get(
-            f"{GRAPH_BASE}/sites/{SITE_ID}/drive/items/{item_id}/content",
-            headers={"Authorization": f"Bearer {token}"},
-        )
-    if resp.status_code != 200:
-        raise HTTPException(status_code=resp.status_code, detail=resp.text)
+    try:
+        token = await get_access_token()
+        async with httpx.AsyncClient(follow_redirects=True) as client:
+            resp = await client.get(
+                f"{GRAPH_BASE}/sites/{SITE_ID}/drive/items/{item_id}/content",
+                headers={"Authorization": f"Bearer {token}"},
+            )
+        if resp.status_code != 200:
+            raise HTTPException(status_code=resp.status_code, detail=resp.text)
 
-    df = pd.read_excel(io.BytesIO(resp.content))
-    df = df.astype(object).where(pd.notnull(df), None)
-    return df.to_dict(orient="records")
+        df = pd.read_excel(io.BytesIO(resp.content))
+        df = df.astype(object).where(pd.notnull(df), None)
+        return df.to_dict(orient="records")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {e}\n{traceback.format_exc()}")
