@@ -219,9 +219,15 @@ async def sharepoint_excel(item_id: str):
             f"{GRAPH_BASE}/sites/{SITE_ID}/drive/items/{item_id}/content",
             headers={"Authorization": f"Bearer {token}"},
         )
-    if resp.status_code != 200:
-        raise HTTPException(status_code=resp.status_code, detail=resp.text)
-
-    df = pd.read_excel(io.BytesIO(resp.content))
-    df = df.astype(object).where(pd.notnull(df), None)
-    return df.to_dict(orient="records")
+        if resp.status_code != 200:
+            raise HTTPException(status_code=resp.status_code, detail=resp.text)
+        
+        df = pd.read_excel(io.BytesIO(resp.content))
+        df = df.where(pd.notnull(df), None)  # Replace NaN with None
+        
+        # Convert to dict and sanitize any remaining NaN values
+        records = df.to_dict(orient="records")
+        return [
+            {k: (None if pd.isna(v) else v) for k, v in record.items()}
+            for record in records
+        ]
