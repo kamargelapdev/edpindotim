@@ -67,6 +67,9 @@ NUMERIC_COLUMNS = [
 
 _token_cache = {"access_token": None, "expires_at": 0}
 
+@app.get("/version-check")
+async def version_check():
+    return {"marker": "sanitized-v2"}
 
 async def get_access_token() -> str:
     if _token_cache["access_token"] and time.time() < _token_cache["expires_at"] - 60:
