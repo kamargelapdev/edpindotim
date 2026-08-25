@@ -225,23 +225,6 @@ async def sharepoint_excel(item_id: str):
     if resp.status_code != 200:
         raise HTTPException(status_code=resp.status_code, detail=resp.text)
 
-    content = io.BytesIO(resp.content)
-    xls = pd.ExcelFile(content)
-
-    # Prefer a sheet literally named "Stock" (case-insensitive); else fall back to the 2nd sheet
-    sheet_name = next(
-        (s for s in xls.sheet_names if s.strip().lower() == "stock"),
-        xls.sheet_names[1] if len(xls.sheet_names) > 1 else xls.sheet_names[0]
-    )
-
-    df = pd.read_excel(xls, sheet_name=sheet_name)
-    records = df.to_dict(orient="records")
-
-    return [
-        {k: (None if pd.isna(v) else v) for k, v in record.items()}
-        for record in records
-    ]
-
 @app.get("/sharepoint/excel-debug")
 async def sharepoint_excel_debug(item_id: str):
     token = await get_access_token()
