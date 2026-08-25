@@ -221,4 +221,5 @@ async def sharepoint_excel(item_id: str):
         raise HTTPException(status_code=resp.status_code, detail=resp.text)
 
     df = pd.read_excel(io.BytesIO(resp.content))
+    df = df.astype(object).where(pd.notnull(df), None)  # <-- tambahin ini
     return df.to_dict(orient="records")
