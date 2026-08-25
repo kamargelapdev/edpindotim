@@ -225,6 +225,13 @@ async def sharepoint_excel(item_id: str):
     if resp.status_code != 200:
         raise HTTPException(status_code=resp.status_code, detail=resp.text)
 
+    df = pd.read_excel(io.BytesIO(resp.content), sheet_name="Stock")
+    records = df.to_dict(orient="records")
+
+    return [
+        {k: (None if pd.isna(v) else v) for k, v in record.items()}
+        for record in records
+    ]
 @app.get("/sharepoint/excel-debug")
 async def sharepoint_excel_debug(item_id: str):
     token = await get_access_token()
