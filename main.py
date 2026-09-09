@@ -232,6 +232,7 @@ async def sharepoint_excel(item_id: str):
         {k: (None if pd.isna(v) else v) for k, v in record.items()}
         for record in records
     ]
+
 @app.get("/sharepoint/excel-debug")
 async def sharepoint_excel_debug(item_id: str):
     token = await get_access_token()
@@ -253,3 +254,76 @@ async def sharepoint_excel_debug(item_id: str):
         "sheet_names": xls.sheet_names,
         "first_10_rows": df_raw.values.tolist(),
     }
+
+@app.post("/sync/stt-reports/week")
+async def sync_stt_specific_week(
+    year: int,
+    week: int
+):
+    # Validate week number
+    if week < 1 or week > 53:
+        raise HTTPException(
+            status_code=400,
+            detail="Week must be between 1 and 53"
+        )
+
+    # Get all STT files from SharePoint
+    files = await list_stt_files()
+
+    # Find the exact requested year + week
+    target_file = next(
+        (
+            f for f in files
+            if f["report_year"] == year
+            and f["report_week"] == week
+        ),
+        None
+    )
+
+    if not target_file:
+        raise HTTPException(
+            status_code=404,
+            detail=f"STT file for {year} week {week} was not found"
+        )
+
+    # Connect to MySQL
+    conn = pymysql.connect(
+        host=DB_HOST,
+        user=DB_USERNAME,
+        password=DB_PASSWORD,
+        database=DB_DATABASE,
+        charset="utf8mb4",
+    )
+
+    try:
+        # Download and parse ONLY this week's Excel
+        df = await fetch_and_parse(target_file["item_id"])
+
+        # Insert/upsert ONLY this week's rows
+        inserted = upsert_rows(
+            conn,
+            df,
+            target_file["report_year"],
+            target_file["report_week"]
+        )
+
+        return {
+            "status": "ok",
+            "message": f"STT {year} W{week} successfully synced",
+            "file": target_file["name"],
+            "report_year": year,
+            "report_week": week,
+            "rows": inserted
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "message": f"Failed to sync STT {year} W{week}",
+                "error": str(e)
+            }
+        )
+
+    finally:
+        conn.close()
