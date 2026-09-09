@@ -20,9 +20,9 @@ GRAPH_BASE = "https://graph.microsoft.com/v1.0"
 
 # --- Laravel MySQL connection ---
 DB_HOST='127.0.0.1'
-DB_USERNAME='root'
-DB_DATABASE='bali_dwipa'
-DB_PASSWORD=''
+DB_USERNAME='u525350507_root'
+DB_DATABASE='u525350507_bali_dwipa'
+DB_PASSWORD='Ramikha81_'
 
 FOLDER_PATH = "EDP/SOURCE/CLEAN/STT WEEK/REGION/BALI"
 FILENAME_PATTERN = re.compile(r"STT_(\d{4})_W(\d{1,2})", re.IGNORECASE)
